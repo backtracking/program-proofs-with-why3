@@ -19,9 +19,9 @@ off-the-shelf SMT solvers, namely Alt-Ergo 2.3.0, CVC4 1.7, and Z3
 4.8.6. Most of the time, any of the three suffices to complete the
 verification. It can be done on the command line, e.g.
 
-  why3 prove -P alt-ergo file.mlw
+    why3 prove -P alt-ergo file.mlw
 
 or interactively using Why3's GUI
 
-  why3 ide file.mlw
+    why3 ide file.mlw
 
