@@ -1,0 +1,34 @@
+
+(* 13.6 Canyon Search *)
+
+use int.Int
+use ref.Refint
+use array.Array
+
+let function dist (x y: int) : int =
+  if x < y then y - x else x - y
+
+let canyon_search (a b: array int) : (d: int)
+  requires { length a > 0 && length b > 0 }
+  requires { forall i i'. 0 <= i <= i' < length a -> a[i] <= a[i'] }
+  requires { forall j j'. 0 <= j <= j' < length b -> b[j] <= b[j'] }
+  ensures  { exists i j. 0 <= i < length a && 0 <= j < length b &&
+             d = dist a[i] b[j] }
+  ensures  { forall i j. 0 <= i < length a -> 0 <= j < length b ->
+             d <= dist a[i] b[j] }
+= let ref m = 0 in
+  let ref n = 0 in
+  let ref d = dist a[0] b[0] in
+  while m < length a && n < length b do
+    invariant { 0 <= m <= length a && 0 <= n <= length b }
+    invariant { exists i j. 0 <= i < length a && 0 <= j < length b &&
+                d = dist a[i] b[j] }
+    invariant { forall i j. 0 <= i < length a -> 0 <= j < length b ->
+                d <= dist a[i] b[j] || (m <= i && n <= j) }
+    variant { length a - m + length b - n }
+    if dist a[m] b[n] < d then d <- dist a[m] b[n];
+    if a[m] < b[n] then incr m
+    else if a[m] > b[n] then incr n
+    else return 0
+  done;
+  d

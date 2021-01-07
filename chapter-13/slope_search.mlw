@@ -1,0 +1,28 @@
+
+(* 13.5 Slope Search *)
+
+use int.Int
+use ref.Refint
+use matrix.Matrix
+
+let slope_search (a: matrix int) (key: int) : (m: int, n: int)
+  requires { forall i j j'. 0 <= i < a.rows -> 0 <= j <= j' < a.columns ->
+             get a i j <= get a i j' }
+  requires { forall i i' j. 0 <= i <= i' < a.rows -> 0 <= j < a.columns ->
+             get a i j <= get a i' j }
+  requires { exists i j. 0 <= i < a.rows && 0 <= j < a.columns &&
+             get a i j = key }
+  ensures  { 0 <= m < a.rows && 0 <= n < a.columns && get a m n = key }
+= let ref m = 0 in
+  let ref n = a.columns - 1 in
+  while get a m n <> key do
+    invariant { 0 <= m < a.rows && 0 <= n < a.columns }
+    invariant { exists i j.
+                m <= i < a.rows && 0 <= j <= n && get a i j = key }
+    variant { a.rows - m + n }
+    if get a m n < key then
+      incr m
+    else
+      decr n
+  done;
+  m, n
