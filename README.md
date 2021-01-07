@@ -12,7 +12,8 @@ program verifier.
 
 This repository follows the structure of Rustan's book, with one
 subdirectory per chapter. When relevant, source files contains
-comments about the differences between Dafny and Why3.
+comments about the differences between Dafny and Why3. Somehow, this
+is a Rosetta Stone in program verification.
 
 The Why3 programs have been verified using Why3 version 1.3.3 and
 off-the-shelf SMT solvers, namely Alt-Ergo 2.3.0, CVC4 1.7, and Z3
