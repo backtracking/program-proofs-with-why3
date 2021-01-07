@@ -1,0 +1,83 @@
+
+(* 5.8 Example: Working on Abstract Syntax Trees *)
+
+use int.Int
+use list.List
+use string.OCaml
+
+type op = Add | Mul
+
+type expr =
+  | Const int
+  | Var string
+  | Node op (list expr)
+
+clone fmap.MapApp with type key = string, val eq = OCaml.(=)
+
+type env = t int
+
+let function unit (op: op) : int
+= match op with Add -> 0 | Mul -> 1 end
+
+let rec function eval (e: expr) (env: env) : int
+  variant { e }
+= match e with
+  | Const n -> n
+  | Var s -> if mem s env then find s env else 0
+  | Node op args -> eval_list op args env
+  end
+
+with function eval_list (op: op) (args: list expr) (env: env) : int
+  variant { args }
+= match args with
+  | Nil -> unit op
+  | Cons e l ->
+      let v0 = eval e env in
+      let v1 = eval_list op l env in
+      match op with
+      | Add -> v0 + v1
+      | Mul -> v0 * v1
+      end
+  end
+
+lemma eval_unit: forall op env l.
+  eval (Node op (Cons (Const (unit op)) l)) env = eval (Node op l) env
+
+(* Instead of lemmas shorten_correct, optimize_correct, etc.
+   we give suitable postconditions to the various functions.
+
+   Note that, despite these postconditions, the functions are still
+   available in the logic (because they are declared with the
+   'function' keyword). The postconditions are also turned into
+   lemmas about these functions. *)
+
+let function shorten (op: op) (args: list expr) : expr
+  ensures { forall env. eval result env = eval (Node op args) env }
+= match args with
+  | Nil -> Const (unit op)
+  | Cons e Nil -> e
+  | _ -> Node op args
+  end
+
+let rec function optimize (e: expr) : expr
+  variant { e }
+  ensures { forall env. eval result env = eval e env }
+= match e with
+  | Const _
+  | Var _ -> e
+  | Node op args -> shorten op (optimize_and_filter args (unit op))
+  end
+
+with function optimize_and_filter (args: list expr) (u: int) : list expr
+  variant { args }
+  ensures { forall op env. u = unit op ->
+            eval (Node op result) env = eval (Node op args) env }
+= match args with
+  | Nil -> Nil
+  | Cons e l ->
+    let e = optimize e in
+    let l = optimize_and_filter l u in
+    assert { forall op env. u = unit op ->
+             eval (Node op (Cons e l)) env = eval (Node op args) env };
+    match e with Const n -> if n = u then l else Cons e l | _ -> Cons e l end
+  end
