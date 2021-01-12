@@ -1,0 +1,24 @@
+
+(* 5.7 Example: Mirroring a Tree *)
+
+use bintree.Tree
+
+let rec function mirror (t: tree 'a) : tree 'a
+  variant { t }
+= match t with
+  | Empty      -> Empty
+  | Node l x r -> Node (mirror r) x (mirror l) end
+
+let rec lemma mirror_involutive (t: tree 'a)
+  variant { t }
+  ensures { mirror (mirror t) = t }
+= match t with
+  | Empty -> () | Node l _ r -> mirror_involutive l; mirror_involutive r end
+
+use bintree.Size
+
+let rec lemma mirror_size (t: tree 'a)
+  variant { t }
+  ensures { size (mirror t) = size t }
+= match t with
+  | Empty -> () | Node l _ r -> mirror_size l; mirror_size r end
