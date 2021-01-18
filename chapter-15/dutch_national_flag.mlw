@@ -1,0 +1,38 @@
+
+(* 15.0 Dutch National Flag *)
+
+use int.Int
+use ref.Refint
+use array.Array
+use array.ArraySwap
+use array.ArrayPermut
+
+type color = Red | White | Blue
+
+val (=) (c d: color) : bool ensures { result <-> c = d }
+
+let predicate below (c d: color) =
+  c = Red || c = d || d = Blue
+
+let dutch_flag (a: array color) : unit
+  writes  { a } (* inferred from the code if omitted *)
+  ensures { forall i, j. 0 <= i < j < length a -> below a[i] a[j] }
+  ensures { permut a (old a) 0 (length a) }
+= let ref r = 0 in
+  let ref w = 0 in
+  let ref b = length a in
+  while w < b do
+    invariant { 0 <= r <= w <= b <= length a }
+    invariant { forall i. 0 <= i < r        -> a[i] = Red   }
+    invariant { forall i. r <= i < w        -> a[i] = White }
+    invariant { forall i. b <= i < length a -> a[i] = Blue  }
+    invariant { permut a (old a) 0 (length a) }
+    variant   { b - w }
+    match a[w] with
+    | White -> incr w
+    | Red   -> swap a r w; incr r; incr w
+    | Blue  -> decr b; swap a w b
+    end
+  done
+
+

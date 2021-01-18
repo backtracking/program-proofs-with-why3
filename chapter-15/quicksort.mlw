@@ -1,0 +1,66 @@
+
+(* 15.2 Quicksort *)
+
+use int.Int
+use ref.Refint
+use array.Array
+use array.ArraySwap
+use array.ArrayPermut
+
+predicate split_point (a: array int) (n: int) =
+  forall i j. 0 <= i < n <= j < length a -> a[i] <= a[j]
+
+(* Note: there is no such thing as a two-state predicate in Why3.
+   Instead, we have a predicate over logical *snapshots* of mutable values
+   (a1 and a2 here). *)
+predicate swap_frame (a1 a2: array int) (lo hi: int) =
+  length a2 = length a1 &&
+  (forall i. 0 <= i < lo || hi <= i < length a1 -> a2[i] = a1[i]) &&
+  permut a2 a1 0 (length a1)
+
+let partition (a: array int)  (lo hi: int) : (p: int)
+  requires { 0 <= lo < hi <= length a }
+  requires { split_point a lo && split_point a hi }
+  ensures  { lo <= p < hi }
+  ensures  { forall i. lo <= i < p -> a[i] <  a[p] }
+  ensures  { forall i. p <= i < hi -> a[p] <= a[i] }
+  ensures  { split_point a lo && split_point a hi }
+  ensures  { swap_frame a (old a) lo hi }
+= let pivot = a[lo] in
+  let ref m = lo + 1 in
+  let ref n = hi in
+  while m < n do
+    invariant { lo + 1 <= m <= n <= hi }
+    invariant { a[lo] = pivot }
+    invariant { forall i. lo + 1 <= i < m -> a[i] < pivot }
+    invariant { forall i. n <= i < hi -> pivot <= a[i] }
+    invariant { split_point a lo && split_point a hi }
+    invariant { swap_frame a (old a) lo hi }
+    variant   { n - m }
+    if a[m] < pivot then
+      incr m
+    else begin
+      decr n;
+      swap a m n
+    end
+  done;
+  decr m;
+  swap a lo m;
+  m
+
+let rec quicksort_aux (a: array int) (lo hi: int) : unit
+  requires { 0 <= lo <= hi <= length a }
+  ensures  { forall i, j. lo <= i < j < hi -> a[i] <= a[j] }
+  requires { split_point a lo && split_point a hi }
+  ensures  { split_point a lo && split_point a hi }
+  ensures  { swap_frame a (old a) lo hi }
+  variant  { hi - lo }
+= if hi - lo <= 1 then return;
+  let p = partition a lo hi in
+  quicksort_aux a lo p;
+  quicksort_aux a (p+1) hi
+
+let quicksort (a: array int) : unit
+  ensures { forall i, j. 0 <= i < j < length a -> a[i] <= a[j] }
+  ensures { permut a (old a) 0 (length a) }
+= quicksort_aux a 0 (length a)
