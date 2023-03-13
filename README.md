@@ -3,7 +3,7 @@ This repository contains some programs from Rustan Leino's book
 
 Author: Jean-Christophe Filliâtre (CNRS)
 
-Rustan Leino's book "Program Proofs" is an introduction to program
+Rustan Leino's book ["Program Proofs"](https://program-proofs.com/) is an introduction to program
 verification using the programming language
 [Dafny](https://github.com/dafny-lang/dafny) and its program verifier.
 [Why3](http://why3.lri.fr/) is another tool for deductive program
